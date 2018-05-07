@@ -1,28 +1,41 @@
 package patreon
 
-import "time"
+import (
+	"net/url"
+	"time"
+)
 
 type (
-	// Response contains one type of requested information.
-	Response struct {
-		Data     *Data  `json:"data"`
-		Included *Data  `json:"included"`
-		Links    *Links `json:"links"`
+	Webhook struct {
+		Data     *Data  `json:"data,omitempty"`
+		Included []Data `json:"included,omitempty"`
 	}
 
-	// ResponseList contains arrays of many types of requested information.
-	ResponseList struct {
-		Data     []Data `json:"data"`
-		Included []Data `json:"included"`
-		Links    *Links `json:"links"`
+	User struct {
+		Data     *Data  `json:"data,omitempty"`
+		Included *Data  `json:"included,omitempty"`
+		Links    *Links `json:"links,omitempty"`
+	}
+
+	Campaign struct {
+		Data     *Data  `json:"data,omitempty"`
+		Included []Data `json:"included,omitempty"`
+		Links    *Links `json:"links,omitempty"`
+	}
+
+	Pledge struct {
+		Data     []Data `json:"data,omitempty"`
+		Included []Data `json:"included,omitempty"`
+		Links    *Links `json:"links,omitempty"`
+		Meta     *Meta  `json:"meta,omitempty"`
 	}
 
 	// Data contains information of requested type of data.
 	Data struct {
-		ID            int            `json:"id,string"`
-		Type          string         `json:"type"`
-		Attributes    *Attributes    `json:"attributes"`
-		Relationships *Relationships `json:"relationships"`
+		ID            int            `json:"id,string,omitempty"`
+		Type          string         `json:"type,omitempty"`
+		Attributes    *Attributes    `json:"attributes,omitempty"`
+		Relationships *Relationships `json:"relationships,omitempty"`
 	}
 
 	// Attributes contains meta-information about data.
@@ -37,7 +50,7 @@ type (
 		DeclinedSince                 *DateTime          `json:"declined_since,string,omitempty"`
 		DiscordID                     int64              `json:"discord_id,string,omitempty"`
 		Email                         string             `json:"email,omitempty"`
-		Facebook                      string             `json:"facebook,omitempty"`
+		Facebook                      *URL               `json:"facebook,omitempty"`
 		FacebookID                    int64              `json:"facebook_id,string,omitempty"`
 		FirstName                     string             `json:"first_name,omitempty"`
 		FullName                      string             `json:"full_name,omitempty"`
@@ -49,15 +62,15 @@ type (
 		IsSuspended                   bool               `json:"is_suspended,omitempty"`
 		SocialConnections             *SocialConnections `json:"social_connections,omitempty"`
 		HasPassword                   bool               `json:"has_password,omitempty"`
-		ImageSmallURL                 string             `json:"image_small_url,omitempty"`
-		ImageURL                      string             `json:"image_url,omitempty"`
+		ImageSmallURL                 *URL               `json:"image_small_url,string,omitempty"`
+		ImageURL                      *URL               `json:"image_url,string,omitempty"`
 		IsMonthly                     bool               `json:"is_monthly,omitempty"`
 		IsNSFW                        bool               `json:"is_nsfw,omitempty"`
 		IsPaused                      bool               `json:"is_paused,omitempty"`
 		LastName                      string             `json:"last_name,omitempty"`
 		LikeCount                     int                `json:"like_count,omitempty"`
 		MainVideoEmbed                string             `json:"main_video_embed,omitempty"`
-		MainVideoURL                  string             `json:"main_video_url,omitempty"`
+		MainVideoURL                  *URL               `json:"main_video_url,string,omitempty"`
 		OneLiner                      string             `json:"one_liner,omitempty"`
 		OutstandingPaymentAmountCents int                `json:"outstanding_payment_amount_cents,omitempty"`
 		PatronCount                   int                `json:"patron_count,omitempty"`
@@ -70,70 +83,69 @@ type (
 		Summary                       string             `json:"summary,omitempty"`
 		ThanksEmbed                   string             `json:"thanks_embed,omitempty"`
 		ThanksMsg                     string             `json:"thanks_msg,omitempty"`
-		ThanksVideoURL                string             `json:"thanks_video_url,omitempty"`
-		ThumbURL                      string             `json:"thumb_url,omitempty"`
+		ThanksVideoURL                *URL               `json:"thanks_video_url,string,omitempty"`
+		ThumbURL                      *URL               `json:"thumb_url,omitempty"`
 		TotalHistoricalAmountCents    int                `json:"total_historical_amount_cents,omitempty"`
-		Twitch                        string             `json:"twitch,omitempty"`
+		Twitch                        *URL               `json:"twitch,omitempty"`
 		Twitter                       string             `json:"twitter,omitempty"`
-		URL                           string             `json:"url,omitempty"`
+		URL                           *URL               `json:"url,omitempty"`
 		Vanity                        string             `json:"vanity,omitempty"`
-		YouTube                       string             `json:"youtube,omitempty"`
+		YouTube                       *URL               `json:"youtube,omitempty"`
 	}
 
 	// Links contains data about current
 	Links struct {
-		Self    string `json:"self"`
-		Related string `json:"related"`
+		Self    *URL `json:"self,omitempty"`
+		Related *URL `json:"related,omitempty"`
 	}
 
 	// DateTime contains date/time data.
-	DateTime struct {
-		time.Time
+	DateTime struct{ time.Time }
+
+	// DateTime contains url data.
+	URL struct{ *url.URL }
+
+	Errors struct {
+		Errors []Error `json:"errors"`
 	}
 
 	// Error contains information about reasons of invalid request.
 	Error struct {
-		ID       string `json:"id"`
-		Code     int    `json:"code"`
-		CodeName string `json:"code_name"`
-		Status   int    `json:"status,string"`
-		Title    string `json:"title"`
-		Detail   string `json:"detail"`
+		ID       string `json:"id,omitempty"`
+		Code     int    `json:"code,omitempty"`
+		CodeName string `json:"code_name,omitempty"`
+		Status   int    `json:"status,string,omitempty"`
+		Title    string `json:"title,omitempty"`
+		Detail   string `json:"detail,omitempty"`
 	}
 
-	// Relationships contains other types of data which relevant for current
-	// response.
+	// Relationships contains other types of data which relevant for current response.
 	Relationships struct {
-		Campaign *Response     `json:"campaign"`
-		Creator  *Response     `json:"creator"`
-		Goals    *ResponseList `json:"goals"`
-		Pledges  *ResponseList `json:"pledges"`
-		Rewards  *ResponseList `json:"rewards"`
+		Campaign *User   `json:"campaign,omitempty"`
+		Creator  *User   `json:"creator,omitempty"`
+		Goals    *Pledge `json:"goals,omitempty"`
+		Pledges  *Pledge `json:"pledges,omitempty"`
+		Rewards  *Pledge `json:"rewards,omitempty"`
 	}
 
 	// SocialConnections contains data about connections to other platforms.
 	SocialConnections struct {
-		DeviantArt *SocialConnection `json:"deviantart"`
-		Discord    *SocialConnection `json:"discord"`
-		Facebook   *SocialConnection `json:"facebook"`
-		Spotify    *SocialConnection `json:"spotify"`
-		Twitch     *SocialConnection `json:"twitch"`
-		Twitter    *SocialConnection `json:"twitter"`
-		YouTube    *SocialConnection `json:"youtube"`
+		DeviantArt *SocialConnection `json:"deviantart,omitempty"`
+		Discord    *SocialConnection `json:"discord,omitempty"`
+		Facebook   *SocialConnection `json:"facebook,omitempty"`
+		Spotify    *SocialConnection `json:"spotify,omitempty"`
+		Twitch     *SocialConnection `json:"twitch,omitempty"`
+		Twitter    *SocialConnection `json:"twitter,omitempty"`
+		YouTube    *SocialConnection `json:"youtube,omitempty"`
 	}
 
-	// SocialConnection contains data about single social connection: user ID and
-	// his scopes.
+	// SocialConnection contains data about single social connection: user ID and his scopes.
 	SocialConnection struct {
-		UserID string   `json:"user_id"`
-		Scopes []string `json:"scopes"`
+		UserID interface{} `json:"user_id,omitempty"`
+		Scopes []string    `json:"scopes,omitempty"`
 	}
-)
 
-const (
-	IncludeRewards = "rewards"
-	IncludeCreator = "creator"
-	IncludeGoals   = "goals"
-	IncludePledge  = "pledge"
-	IncludePledges = "pledges"
+	Meta struct {
+		Count int `json:"count,omitempty"`
+	}
 )

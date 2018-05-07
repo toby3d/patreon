@@ -1,33 +1,50 @@
 package patreon
 
 import (
-	"net/url"
+	"path"
+	"strconv"
 	"strings"
 
-	log "github.com/kirillDanshin/dlog"
 	json "github.com/pquerna/ffjson/ffjson"
-	"golang.org/x/oauth2"
 )
 
-func GetCreatorProfile(token *oauth2.Token, includes ...string) (*ResponseList, error) {
-	requestURI := &url.URL{
-		Scheme: "https",
-		Host:   "www.patreon.com",
-		Path:   "/api/oauth2/api/current_user/campaigns",
-	}
+// Can use next includes: rewards, creator, goals, pledges
+func (client *Client) GetCurrentCampaign(includes ...string) (*Campaign, error) {
+	requestURI := defaultURI
+	requestURI.Path = path.Join("api", "oauth2", "api", "current_user", "campaigns")
+
 	if len(includes) > 0 {
 		query := requestURI.Query()
 		query.Add("includes", strings.Join(includes, ","))
 		requestURI.RawQuery = query.Encode()
 	}
 
-	resp, err := get(token, requestURI.String())
+	resp, err := client.get(requestURI.String())
 	if err != nil {
 		return nil, err
 	}
 
-	var data ResponseList
+	var data Campaign
 	err = json.Unmarshal(resp, &data)
-	log.D(data)
+	return &data, err
+}
+
+func (client *Client) GetCampaign(campaignID int, includes ...string) (*Pledge, error) {
+	requestURI := defaultURI
+	requestURI.Path = path.Join("api", "campaigns", strconv.Itoa(campaignID))
+
+	if len(includes) > 0 {
+		query := requestURI.Query()
+		query.Add("includes", strings.Join(includes, ","))
+		requestURI.RawQuery = query.Encode()
+	}
+
+	resp, err := client.get(requestURI.String())
+	if err != nil {
+		return nil, err
+	}
+
+	var data Pledge
+	err = json.Unmarshal(resp, &data)
 	return &data, err
 }
